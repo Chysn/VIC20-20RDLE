@@ -151,20 +151,23 @@ BoardSetup: lda #$08            ; Set screen color
             ; Fall through to Main
             
 Main:       jsr DrawCursor
+debounce:   ldy #$40
+-loop:      cpy $c5
+            bne loop
 wait:       jsr SCNKEY
             jsr GETIN
             cmp #0
             beq wait
-            ldy #$40
-debounce:   cpy $c5
-            bne debounce
             ldy #0              ; Clear keyboard buffer
             sty KBSIZE          ; ,,
             cmp #$14            ; Backspace, remove last character
             beq Backspace       ; ,,
             cmp #$0d            ; RETURN, submit move
             beq Submit          ; ,,
-            cmp #"A"            ; If <A, do nothing
+            cmp #133            ; If F1 is pressed, restart game
+            bne ch_letters      ; ,,
+            jmp PickWord        ; ,,
+ch_letters: cmp #"A"            ; If <A, do nothing
             bcc debounce        ; ,,
             cmp #"Z"+1          ; if >Z, do nothing
             bcs debounce        ; ,,
@@ -178,7 +181,7 @@ add_char:   ldy POSITION        ; Add the pressed letter to the move string
             jsr CHROUT
             lda POSITION
             cmp #04
-            beq wait
+            beq debounce
             inc POSITION
             jmp Main
 
@@ -226,8 +229,8 @@ Eval:       lda #0              ; Reset the score, the number of green positions
             lda MOVE,y          ; ,,
             and #$3f            ; ,,
             tay                 ; ,,
-            lda #6              ; ,,
-            sta DISPLAY+$9400,y ; ,,
+            lda #" "            ; ,,
+            sta DISPLAY+$1000,y ; ,,
             pla                 ; ,,
             tay                 ; ,,
             lda MOVE,y          ; Get the move at the position
@@ -264,27 +267,26 @@ Winner:     lda #13
             cmp #$40
             beq wait
             jmp PickWord  
-            
+
+; Handle Indicators            
 Green:      inc SCORE           ; Increment the score for a green position
             lda #30             ; ,,
             .byte $3c           ; (Skip the next word)
 Yellow:     lda #158            ; ,,
-            stx TMP             ; Preserve X and Y against other uses, because
-            sty POSITION        ;   they're needed back in Eval
             pha                 ; Save the color
+            sty POSITION        ; Save Y
             jsr Pos             ; Position the cursor
             pla                 ; Get back the color
             jsr CHROUT          ; Write the color
             lda #18             ; Reverse on
             jsr CHROUT          ; ,,
-            ldy POSITION        ; Now get and write the actual character at
-            lda MOVE,y          ;   the current position
-            jsr CHROUT          ;   ,,
+            ldy POSITION        ; Write the selected letter
+            lda MOVE,y          ; ,,
+            jsr CHROUT          ; ,,
             lda #146            ; Reverse off
             jsr CHROUT          ; ,,
             jmp next_pos
                    
-            
 ; Increment Word Pointer          
 IncPtr:     lda #3
             clc

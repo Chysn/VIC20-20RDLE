@@ -1,9 +1,13 @@
-20RDLE is a 5-letter puzzle game for Commodore VIC-20, inspired by WORDLE.
+20RDLE is a 5-letter puzzle game for Commodore VIC-20, inspired by WORDLE. It
+requires 24K of memory expansion in your VIC-20. To start 20RDLE:
+
+    LOAD "20RDLE",8
+    RUN
 
 You have six guesses to find the 5-letter word that your VIC-20 is thinking of.
 
 Enter a 5-letter word in the matrix. Press DEL to go back, and RETURN to submit 
-your guess.
+your guess. You may also press F1 to restart the game with a new word.
 
 20RDLE will highlight letters in the puzzle. Letters in the right place will be
 highlighted  green, and letters that are in the puzzle, but in the wrong place, 
