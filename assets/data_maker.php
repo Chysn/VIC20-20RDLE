@@ -3,7 +3,7 @@
 // Usage
 // php data_maker.php > ../asm/word_list.asm
 
-$index = "            .word $0000"; // Table of addresses of first letters
+$index = "            .word $0000\n"; // Table of addresses of first letters
 $data = ''; // Table of last four letters
 $word_list = file('word_list.txt');
 $common_words = file('common_words.txt');
@@ -16,8 +16,6 @@ foreach ($word_list as $word)
     $first_letter = substr($word, 0, 1);
     if ($first_letter != $last_first_letter) {
         $h = str_pad(dechex($addr), 4, '0', STR_PAD_LEFT);
-//        $lsb = str_pad(substr($h, 2, 2), 2, '0', STR_PAD_LEFT);
-//        $msb = str_pad(substr($h, 0, 2), 2, '0', STR_PAD_LEFT);
         $index .= "            .word \${$h} ; Offset {$first_letter}\n";
         $last_first_letter = $first_letter;
     }
@@ -64,6 +62,8 @@ $data .= "            .byte \$ff,\$ff,\$ff ; End of word list\n";
 
 $size = sizeof($word_list);
 $hex_size = dechex($size);
+$h = str_pad(dechex($addr), 4, '0', STR_PAD_LEFT);
+$index .= "            .word \${$h} ; End-Of-List offset\n";
 
 print "ListSize:   .word \${$hex_size} ; {$size} words ({$common} common)\n";
 print "AlphInd:" . substr($index, 8);

@@ -1,5 +1,5 @@
 ListSize:   .word $22e4 ; 8932 words (3970 common)
-AlphInd:    .word $0000 ; 0-indexed offset
+AlphInd:    .word $0000            
             .word $0000 ; Offset a
             .word $0603 ; Offset b
             .word $0d4a ; Offset c
@@ -26,6 +26,7 @@ AlphInd:    .word $0000 ; 0-indexed offset
             .word $66b1 ; Offset x
             .word $66d8 ; Offset y
             .word $6804 ; Offset z
+            .word $68ac ; End-Of-List offset
 WordList:   .byte $85,$02,$48,$85,$44,$52,$86,$23,$50,$88,$11,$42,$88,$11,$52 ;a
             .byte $88,$11,$57,$88,$13,$28,$88,$15,$42,$88,$16,$60,$88,$19,$4b ;a
             .byte $88,$19,$50,$88,$1a,$0b,$88,$1c,$42,$88,$20,$66,$88,$22,$66 ;a
