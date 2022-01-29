@@ -27,14 +27,14 @@ WORD        = $033c             ; The current puzzle (5 bytes)
 MOVE        = $0341             ; The current move (5 bytes)
 PACKED      = $0346             ; The packed current move (3 bytes)
 WORD_PTR    = $fa               ; Word pointer (2 bytes)
-P_RAND      = $a0               ; Pseudorandom seed (2 bytes)
+P_RAND      = $0349             ; Pseudorandom seed (2 bytes)
 RNDNUM      = $0b               ; Random number tmp
 TMP         = $fc               ; Temporary pointer (2 bytes)
 CUR_FIRST   = $fe
 MOVENUM     = $b0               ; Move number
 SCORE       = $b1               ; Evaluation score (5 to win)
 POSITION    = $ff               ; Character position
-VIATIME     = $9114             ; VIA 1 Timer 1 LSB
+TIMER       = $a1               ; Timer
 KBSIZE      = $c6               ;   advancing the assembly address
 DISPLAY     = $018b             ; Position of the helper alphabet
 
@@ -46,22 +46,22 @@ GETIN       = $ffe4             ; Get character from buffer
 SCNKEY      = $ff9f             ; Scan keyboard
 
 ; Pick a Puzzle Word
-PickWord:   lda VIATIME+1       ; Seed random number generator.
+Begin:      lda TIMER+1         ; Seed random number generator.
             ora #$01            ; ,,
             sta P_RAND          ; ,,
-            lda VIATIME         ; ,,
+            lda TIMER           ; ,,
             ora #$80            ; ,,
             sta P_RAND+1        ; ,,
-rnd_word:   jsr Rand255         ; Get low byte of word number ($00-$2f)
+PickWord:   jsr Rand255         ; Get low byte of word number ($00-$2f)
             sta TMP             ; ,,
             jsr Rand63          ; Get high byte of word number ($00-$ff)
             sta TMP+1           ; ,,
             cmp ListSize+1      ; Check the list size high byte
             bcc w_ok            ; If the high byte is lower, the range is good
-            bne rnd_word        ; If the high byte is higher, need a new value
+            bne PickWord        ; If the high byte is higher, need a new value
             lda ListSize        ; ,,
             cmp TMP             ; ,,
-            bcs rnd_word        ; ,,
+            bcs PickWord        ; ,,
 w_ok:       lda #0              ; Initialize WORD_PTR
             sta WORD_PTR        ;   ,,
             sta WORD_PTR+1      ;   ,,
@@ -85,7 +85,7 @@ w_ok:       lda #0              ; Initialize WORD_PTR
 -loop:      ldy #2              ; Get the third byte of the word pointer
             lda (WORD_PTR),y    ; ,,
             cmp #$ff            ; If #$ff, the end of the word list has been
-            beq rnd_word        ;   reached. Go back for a new random word.
+            beq PickWord        ;   reached. Go back for a new random word.
             and #$01            ; If bit 0 is set, it's a common word, and may
             bne found_word      ;   be selected as a puzzle
             jsr IncPtr          ; If not a common word, increment the word
@@ -166,7 +166,7 @@ wait:       jsr SCNKEY
             beq Submit          ; ,,
             cmp #133            ; If F1 is pressed, restart game
             bne ch_letters      ; ,,
-            jmp PickWord        ; ,,
+            jmp Begin           ; ,,
 ch_letters: cmp #"A"            ; If <A, do nothing
             bcc debounce        ; ,,
             cmp #"Z"+1          ; if >Z, do nothing
