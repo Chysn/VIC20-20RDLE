@@ -99,7 +99,7 @@ found_word: sec                 ; Subtract the actual address of WordList from
             lda WORD_PTR+1      ;   table AlphInd
             sbc #>WordList      ;   ,,   
             sta TMP+1           ;   ,,
-            lda #0              ; Start with the letter A
+            lda #1              ; Start with the letter A
 -loop:      asl                 ; Double the index (2 bytes per letter)
             tay                 ; Convert A to index
             lda AlphInd+1,y     ; 
