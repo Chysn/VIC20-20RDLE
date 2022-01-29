@@ -1,0 +1,19 @@
+20RDLE is a 5-letter puzzle game for Commodore VIC-20, inspired by WORDLE.
+
+You have six guesses to find the 5-letter word that your VIC-20 is thinking of.
+
+Enter a 5-letter word in the matrix. Press DEL to go back, and RETURN to submit 
+your guess.
+
+20RDLE will highlight letters in the puzzle. Letters in the right place will be
+highlighted  green, and letters that are in the puzzle, but in the wrong place, 
+will be highlighted yellow.
+
+If you figure out the word with six guesses or less, you WIN, and the border
+will turn green.
+
+If you don't figure out the word, you LOSE, and the border will turn red. To
+add to your humiliation, you won't learn what the word is.
+
+To start a new game, press any key.
+
