@@ -116,10 +116,8 @@ maybe:      bne found_ltr
 found_ltr:  tya                 ; A letter has been found. The index (Lx2)
             lsr                 ;   is moved to A, and halved to get the letter
             sta CUR_FIRST       ;   index, which is stored in CUR_FIRST. A is
-            dec CUR_FIRST       ;   1, so increment the letter
+            dec CUR_FIRST       ;   1, so decrement the letter
             jsr UnpackWord      ;
-            lda WORD_PTR+1
-            ldx WORD_PTR
             ; Fall through to BoardSetup
             
 BoardSetup: lda #$08            ; Set screen color
