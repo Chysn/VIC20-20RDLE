@@ -64,8 +64,6 @@ $data .= "            .byte \$ff,\$ff,\$ff ; End of word list\n";
 
 $size = sizeof($word_list);
 $hex_size = dechex($size);
-$h = str_pad(dechex($addr), 4, '0', STR_PAD_LEFT);
-$index .= "            .word \${$h} ; End-Of-List offset\n";
 
 print "ListSize:   .word \${$hex_size} ; {$size} words ({$common} common)\n";
 print "AlphInd:" . substr($index, 8);
