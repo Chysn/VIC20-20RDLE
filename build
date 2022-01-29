@@ -1,4 +1,4 @@
 xa -l toc -o ./vic/20rdle.bin ./src/20rdle.asm
-printf "\x00\x12" | cat - ./vic/20rdle.bin > ./vic/20rdle.prg
+printf "\x01\x12" | cat - ./vic/20rdle.bin > ./vic/20rdle.prg
 cp ./vic/20rdle.prg ~/vic20/20rdle
 
