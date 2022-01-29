@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;                                   VICWord
+;                                    20RDLE
 ;                            (c)2022, Jason Justian
 ;                  
 ; Assembled with XA
@@ -100,7 +100,7 @@ found_word: sec                 ; Subtract the actual address of WordList from
             lda #0              ; Start with the letter A
 -loop:      asl                 ; Double the index (2 bytes per letter)
             tay                 ; Convert A to index
-            lda AlphInd+1,y
+            lda AlphInd+1,y     ; 
             cmp TMP+1
             bcs maybe
 next_ltr:   tya
