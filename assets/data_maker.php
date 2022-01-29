@@ -13,11 +13,13 @@ $addr = 0; // Offset address
 $common = 0;
 foreach ($word_list as $word)
 {
+    $new_letter = 0; // Set to bit 7 if first word of new first letter
     $first_letter = substr($word, 0, 1);
     if ($first_letter != $last_first_letter) {
         $h = str_pad(dechex($addr), 4, '0', STR_PAD_LEFT);
         $index .= "            .word \${$h} ; Offset {$first_letter}\n";
         $last_first_letter = $first_letter;
+        $new_letter = 128;
     }
     
     // Pack the last four letters of each word into three bytes
@@ -33,7 +35,7 @@ foreach ($word_list as $word)
     {
         $last4[$i] = ord($last4[$i]) - 96;
     }
-    $byte1 = 128 + ($last4[0] * 4) + (($last4[1] & 24) / 8); // All of b, high 2 of c
+    $byte1 = $new_letter + ($last4[0] * 4) + (($last4[1] & 24) / 8); // All of b, high 2 of c
     $byte2 = (($last4[1] & 7) * 16) + (($last4[2] & 30) /2); // low 3 of c, high 4 of d
     $byte3 = (($last4[2] & 1) * 64) + ($last4[3] * 2); // low 1 of d, all of e
 

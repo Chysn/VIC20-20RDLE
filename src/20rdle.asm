@@ -27,7 +27,6 @@ WORD        = $033c             ; The current puzzle (5 bytes)
 MOVE        = $0341             ; The current move (5 bytes)
 PACKED      = $0346             ; The packed current move (3 bytes)
 WORD_PTR    = $fa               ; Word pointer (2 bytes)
-STOP_PAGE   = $b2               ; Stop searching at this page
 P_RAND      = $0349             ; Pseudorandom seed (2 bytes)
 RNDNUM      = $0b               ; Random number tmp
 TMP         = $fc               ; Temporary pointer (2 bytes)
@@ -367,12 +366,6 @@ Validate:   lda MOVE            ; Convert the first letter into an index to
             sta WORD_PTR        ;   pointer
             lda AlphInd+1,x     ;   ,,
             sta WORD_PTR+1      ;   ,,
-            lda #>WordList      ; Set the STOP_PAGE, which guides when the
-            sta STOP_PAGE       ;   validation stops
-            lda AlphInd+3,x     ;   It's the high byte of the NEXT letter
-            sec                 ;   plus one
-            adc STOP_PAGE       ;   ,,
-            sta STOP_PAGE       ;   ,,
             lda #<WordList      ; Add the word list address to the alphabetic
             clc                 ;   offset. This is where we'll start looking
             adc WORD_PTR        ;   for the last four letters of the word for
@@ -397,13 +390,9 @@ search:     ldy #0
             sec                 ; Set carry - Word is valid
             rts                 ; ,,
 srch_next:  jsr IncPtr          ; Increment the word pointer
-            lda WORD_PTR+1      ; Have we reached the stop page?
-            cmp STOP_PAGE       ; ,,
-            bcs unfound         ; If so, bail out of the search
-            ldy #0              ; Also check for the actual end of
-            lda (WORD_PTR),y    ;   the word list
-            cmp #$ff            ;   ,,
-            bne search
+            ldy #0              ; If bit 7 is set, either the end of the word
+            lda (WORD_PTR),y    ;   list has been reached, or the start of the
+            bpl search          ;   next first letter's data has been reached
 unfound:    clc
             rts
 
@@ -425,7 +414,6 @@ L1:         lda CUR_FIRST       ; LETTER 1. Decode the first letter to the
             sta WORD            ;   first location directly
             ldy #0              ; Get the next byte of the word pointer
             lda (WORD_PTR),y    ; ,,
-            bpl error           ; Word pointer is misaligned
             asl                 ; Shift off the word align bit
 L2:         ldx #5              ; LETTER 2. Rotate the leftmost 5 bits
 -loop:      asl                 ;  into second letter (WORD+1) by using carry
@@ -466,7 +454,6 @@ unpack_r:   ldx #4              ; Convert the letters to PETSCII
             dex                 ; ,,
             bpl loop            ; ,,
             rts                 ; All done
-error:      brk 
 
 ; Pack Word
 ; Pack the word at the MOVE+1 address, and store it into PACKED  
@@ -486,22 +473,17 @@ PackWord:   lda #0              ; Clear out all packed bytes. They're going
             rol PACKED          ;   ,,
             dey                 ;   ,,
             bne loop            ;   ,,
-            lda MOVE+2          ; LETTER 3. Move the high two bits into packed
-            jsr prep            ;   Byte 1
+            lda MOVE+2          ; LETTER 3. Move the high two bits into PACKED
+            jsr prep            ;   ,,
             asl                 ;   ,,
             rol PACKED          ;   ,,
             asl                 ;   ,,
             rol PACKED          ;   ,,
-            pha                 ; Save the low 3 bits of Letter 3 for PACKED+1
-            lda #$80            ; Set the high bit of PACKED. That functions as
-            ora PACKED          ;   an alignment bit
-            sta PACKED          ;   ,,
-            pla                 ; Put the low 3 bits of Letter 3 into PACKED+1
-            ldy #3              ; ,,
--loop:      asl                 ; ,,
-            rol PACKED+1        ; ,,
-            dey                 ; ,,
-            bne loop            ; ,,
+            ldy #3              ;  The next three bits of Letter 3 go into
+-loop:      asl                 ;   PACKED+1
+            rol PACKED+1        ;   ,,
+            dey                 ;   ,,
+            bne loop            ;   ,,
             lda MOVE+3          ; LETTER 4. Move the high four bits into
             jsr prep            ;   PACKED+1
             ldy #4              ;   ,,
