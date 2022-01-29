@@ -38,6 +38,7 @@ POSITION    = $ff               ; Character position
 TIMER       = $a1               ; Timer
 KBSIZE      = $c6               ;   advancing the assembly address
 DISPLAY     = $018b             ; Position of the helper alphabet
+CASECT      = $0291             ; Disable Commodore case
 
 ; KERNAL and BASIC Routines
 PRTSTR      = $cb1e             ; Print to 0, A=low Y=high
@@ -124,6 +125,8 @@ found_ltr:  tya                 ; A letter has been found. The index (Lx2)
             
 BoardSetup: lda #$08            ; Set screen color
             sta $900f           ; ,,
+            lda #$80            ; Disable Commodore-Shift
+            sta CASECT          ; ,,
             lda #<Intro         ; Show intro banner
             ldy #>Intro         ; ,,
             jsr PRTSTR          ; ,,
@@ -527,8 +530,9 @@ prep:       and #$3f            ; Convert A to a 5-bit byte (a=1 ~ z=26) and
 ; DATA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Intro:      .asc $93,$0d,$9e,"      * 20RDLE *",$0d
-            .asc "2022 BEIGE MAZE VICLAB",$0d,$0d,$0d,$00
-InputLine:  .asc $05,$0d,"        ",$cf,$cf,$cf,$cf,$cf,$b4,$00
-Bottom:     .asc $0d,"        ",$b8,$b8,$b8,$b8,$b8,$00
+            .asc "2022 BEIGE MAZE VICLAB",$0d,$0d,$0d
+            .asc "        ",$05,$af,$af,$af,$af,$af,$af,$00
+InputLine:  .asc $05,$0d,"        ",$cf,$cf,$cf,$cf,$cf,18,$20,146,$00
+Bottom:     .asc $0d,"        ",18,$20,$20,$20,$20,$20,146,$a9,$00
 
 #include "./src/word_list.asm"
