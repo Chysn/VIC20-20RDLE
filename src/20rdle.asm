@@ -382,7 +382,7 @@ search:     ldy #2              ; Compare packed bytes to word list bytes
 no_mask:    cmp PACKED,y        ; If any bytes are wrong, check for end and go
             bne srch_next       ;   to the next entry
             dey
-            bne loop
+            bpl loop
             sec                 ; Set carry - Word is valid
             rts                 ; ,,
 srch_next:  jsr IncPtr          ; Increment the word pointer
