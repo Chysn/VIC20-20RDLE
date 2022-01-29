@@ -329,7 +329,7 @@ DrawCursor: lda POSITION
             jsr CHROUT
             lda #18             ; Reverse on
             jsr CHROUT          ; ,,
-            lda #$20            ; Space
+            lda #"*"            ; Asterisk
             jsr CHROUT          ; ,,
             lda POSITION        ; If this isn't the last position, draw a
             cmp #4              ;   cell border to the right
@@ -516,7 +516,7 @@ prep:       and #$3f            ; Convert A to a 5-bit byte (a=1 ~ z=26) and
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Intro:      .asc $93,$0d,$9e,"      * 20RDLE *",$0d
             .asc "2022 BEIGE MAZE VICLAB",$0d,$0d,$0d,$00
-InputLine:  .asc $05,$0d,"        ",$cf,$cf,$cf,$cf,$cf,$a5,$00
-Bottom:     .asc $0d,"        ",$b7,$b7,$b7,$b7,$b7,$00
+InputLine:  .asc $05,$0d,"        ",$cf,$cf,$cf,$cf,$cf,$b4,$00
+Bottom:     .asc $0d,"        ",$b8,$b8,$b8,$b8,$b8,$00
 
 #include "./src/word_list.asm"
