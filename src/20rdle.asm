@@ -374,19 +374,15 @@ Validate:   lda MOVE            ; Convert the first letter into an index to
             adc WORD_PTR+1      ;   ,,
             sta WORD_PTR+1      ;   ,,
             jsr PackWord        ; Pack the word into 3 bytes for search
-search:     ldy #0
-            lda (WORD_PTR),y
-            cmp PACKED
-            bne srch_next
-            iny
-            lda (WORD_PTR),y
-            cmp PACKED+1
-            bne srch_next
-            iny
-            lda (WORD_PTR),y
-            and #$fe
-            cmp PACKED+2
-            bne srch_next
+search:     ldy #2              ; Compare packed bytes to word list bytes
+-loop:      lda (WORD_PTR),y    ;   against the current word list entry.
+            cpy #2              ; The third byte is a special case, because it
+            bne no_mask         ;   contains the "common word" bit 0, which
+            and #$fe            ;   must be masked off.
+no_mask:    cmp PACKED,y        ; If any bytes are wrong, check for end and go
+            bne srch_next       ;   to the next entry
+            dey
+            bne loop
             sec                 ; Set carry - Word is valid
             rts                 ; ,,
 srch_next:  jsr IncPtr          ; Increment the word pointer
@@ -495,12 +491,12 @@ PackWord:   lda #0              ; Clear out all packed bytes. They're going
             rol PACKED+2        ; ,,
             lda MOVE+4          ; LETTER 5. All five bits get rotated into
             jsr prep            ;   PACKED+2
-            ldy #5
--loop:      asl
-            rol PACKED+2
-            dey
-            bne loop
-            asl PACKED+2        ; One more byte, the "Common Word" byte
+            ldy #5              ;   ,,
+-loop:      asl                 ;   ,,
+            rol PACKED+2        ;   ,,
+            dey                 ;   ,,
+            bne loop            ;   ,,
+            asl PACKED+2        ; One more bit, the "Common Word" bit
             rts
 prep:       and #$3f            ; Convert A to a 5-bit byte (a=1 ~ z=26) and
             asl                 ;   then set them up for carry flag shifting
