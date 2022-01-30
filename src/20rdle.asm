@@ -101,18 +101,18 @@ found_word: sec                 ; Subtract the actual address of WordList from
             lda #1              ; Start with the letter A
 -loop:      asl                 ; Double the index (2 bytes per letter)
             tay                 ; Convert A to index
-            lda AlphInd+1,y     ; 
-            cmp TMP+1
-            bcs maybe
-next_ltr:   tya
-            lsr
-            clc
-            adc #1
-            jmp loop
-maybe:      bne found_ltr
-            lda AlphInd,y
-            cmp TMP
-            bcc next_ltr
+            lda AlphInd+1,y     ; Has the high byte of the word reached the
+            cmp TMP+1           ;   alphabet index yet?
+            bcs maybe           ;   If so, it could be done. Check the low byte.
+next_ltr:   tya                 ; Otherwise, advance to the next letter
+            lsr                 ; ,,
+            clc                 ; ,,
+            adc #1              ; ,,
+            jmp loop            ; And get its index
+maybe:      bne found_ltr       ; If the high was greater, the letter was found
+            lda AlphInd,y       ; Otherwise, it was equal, so check the low
+            cmp TMP             ;   byte
+            bcc next_ltr        ; If still too low, get the next letter
 found_ltr:  tya                 ; A letter has been found. The index (Lx2)
             lsr                 ;   is moved to A, and halved to get the letter
             sta CUR_FIRST       ;   index, which is stored in CUR_FIRST. A is
@@ -152,14 +152,14 @@ BoardSetup: lda #$08            ; Set screen color
             ; Fall through to Main
             
 Main:       jsr DrawCursor
-debounce:   ldy #$40
--loop:      cpy $c5
-            bne loop
-wait:       jsr SCNKEY
-            jsr GETIN
-            cmp #0
-            beq wait
-            ldy #0              ; Clear keyboard buffer
+debounce:   ldy #$40            ; Debounce the keyboard by waiting for all keys
+-loop:      cpy $c5             ;   to be released
+            bne loop            ;   ,,
+wait:       jsr SCNKEY          ; From Programmer's Reference Guide, method for
+            jsr GETIN           ;   getting a character code as input
+            cmp #0              ;   ,,
+            beq wait            ;   ,,
+            ldy #0              ; Clear keyboard buffer to prevent clogs
             sty KBSIZE          ; ,,
             cmp #$14            ; DEL, remove last character
             beq Backspace       ; ,,
@@ -176,15 +176,15 @@ add_char:   ldy POSITION        ; Add the pressed letter to the move string
             sta MOVE,y          ; ,,
             pha
             jsr Pos             ; Position the cursor
-            lda #18
-            jsr CHROUT
-            pla
-            jsr CHROUT
-            lda POSITION
-            cmp #04
-            beq debounce
-            inc POSITION
-            jmp Main
+            lda #18             ; Reverse on
+            jsr CHROUT          ; ,,
+            pla                 ; Get the pressed key character back and
+            jsr CHROUT          ;   output it to the matrix
+            lda POSITION        ; Increment the position if not already in
+            cmp #04             ;   the final position
+            beq debounce        ;   ,,
+            inc POSITION        ;   ,,
+            jmp Main            ; Going back to main redraws the cursor
 
 ; Handle DEL            
 Backspace:  lda POSITION        ; If the player is already in the first
@@ -259,17 +259,17 @@ next_pos:   iny                 ; Go to the next position
             jmp Main
 
 ; Handle Game Over Stuff
-Loser:      lda #10
-            .byte $3c            
-Winner:     lda #13
-            sta $900f
--debounce:  lda $c5
-            cmp #$40
-            bne debounce
--wait:      lda $c5
-            cmp #$40
-            beq wait
-            jmp PickWord  
+Loser:      lda #10             ; Set screen border to red if lost
+            .byte $3c           ; (skip next word)
+Winner:     lda #13             ; Set screen border to green if won
+            sta $900f           ; ,,
+-debounce:  lda $c5             ; Debounce the keyboard, and then wait
+            cmp #$40            ;   for any key
+            bne debounce        ;   ,,
+-wait:      lda $c5             ;   ,,
+            cmp #$40            ;   ,,
+            beq wait            ;   ,,
+            jmp Begin           ; Start the game over
 
 ; Handle Indicators            
 Green:      inc SCORE           ; Increment the score for a green position
@@ -291,12 +291,12 @@ Yellow:     lda #158            ; ,,
             jmp next_pos
                    
 ; Increment Word Pointer          
-IncPtr:     lda #3
-            clc
-            adc WORD_PTR
-            sta WORD_PTR
-            bcc inc_r
-            inc WORD_PTR+1
+IncPtr:     lda #3              ; Each word record takes three bytes, so add
+            clc                 ;   3 to the word pointer
+            adc WORD_PTR        ;   ,,
+            sta WORD_PTR        ;   ,,
+            bcc inc_r           ;   ,,
+            inc WORD_PTR+1      ;   ,,
 inc_r:      rts 
 
 ; Pseudo Random
@@ -319,12 +319,9 @@ shift_rnd:  rol RNDNUM
             rts      
 
 ; Draw Cursor
-DrawCursor: lda POSITION
-            cmp #5
-            bcs crsr_r
-            jsr Pos
+DrawCursor: jsr Pos             ; Set position on screen via PLOT
             lda #5              ; Set color to white
-            jsr CHROUT
+            jsr CHROUT          ; ,,
             lda #18             ; Reverse on
             jsr CHROUT          ; ,,
             lda #"*"            ; Asterisk
