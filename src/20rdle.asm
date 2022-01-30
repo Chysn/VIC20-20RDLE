@@ -161,7 +161,7 @@ wait:       jsr SCNKEY
             beq wait
             ldy #0              ; Clear keyboard buffer
             sty KBSIZE          ; ,,
-            cmp #$14            ; Backspace, remove last character
+            cmp #$14            ; DEL, remove last character
             beq Backspace       ; ,,
             cmp #$0d            ; RETURN, submit move
             beq Submit          ; ,,
@@ -187,39 +187,39 @@ add_char:   ldy POSITION        ; Add the pressed letter to the move string
             jmp Main
 
 ; Handle DEL            
-Backspace:  lda POSITION
-            beq to_main
-            cmp #4
-            beq bk_last
-            tay
-            lda #0
-            sta MOVE,y
-dec_pos:    dec POSITION
-to_main:    jmp Main 
-bk_last:    lda MOVE+4   
-            beq dec_pos
-            lda #0
-            sta MOVE+4
-            jmp Main
+Backspace:  lda POSITION        ; If the player is already in the first
+            beq to_main         ;   position, just go back
+            cmp #4              ; If the player is in the last position, there
+            beq bk_last         ;   are a couple different DEL scenarios
+            tay                 ; Clear the position (0 = no letter there)
+            lda #0              ; ,,
+            sta MOVE,y          ; ,,
+dec_pos:    dec POSITION        ; Go back to the previous position
+to_main:    jmp Main            ; And back for more input
+bk_last:    lda MOVE+4          ; If there's no letter here yet, just move
+            beq dec_pos         ;   backwards
+            lda #0              ; If there is a letter here, clear it, but
+            sta MOVE+4          ;   keep the cursor in the last position
+            jmp Main            ;   and go back for more input
 
 ; Handle RETURN
 Submit:     lda POSITION        ; Is the cursor in the last position?
             cmp #4              ; If not, back to Main
             bne to_main         ; ,,
-            tay                 ; Is there a letter 
-            lda MOVE,y
-            beq to_main
+            tay                 ; If there's no letter in the last position,
+            lda MOVE,y          ;   go back for more input
+            beq to_main         ;   ,,
             jsr Validate        ; Make sure the word is in the word list
             bcs Eval
-            lda #15
-            sta $900f
-            lda $a2
-            adc #$10
-delay:      cmp $a2
-            bne delay
-            lda #8
-            sta $900f
-            jmp wait
+            lda #15             ; This is an invalid word. Turn the border
+            sta $900f           ;   color yellow for a few jiffies
+            lda $a2             ;   ,,
+            adc #$10            ;   ,,
+delay:      cmp $a2             ;   ,,
+            bne delay           ;   ,,
+            lda #8              ; Set the border color back to normal
+            sta $900f           ; ,,
+            jmp wait            ; And go back for more input (a new word, etc.)
 
 ; Evaluate Move
 ; Correct letters in correct positions are green
