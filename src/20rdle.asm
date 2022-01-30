@@ -213,8 +213,10 @@ Submit:     lda POSITION        ; Is the cursor in the last position?
             bcs Eval
             lda #15
             sta $900f
-            lda #$10
-            jsr Delay
+            lda $a2
+            adc #$10
+delay:      cmp $a2
+            bne delay
             lda #8
             sta $900f
             jmp wait
@@ -296,13 +298,6 @@ IncPtr:     lda #3
             bcc inc_r
             inc WORD_PTR+1
 inc_r:      rts 
-
-; Delay for A jiffies
-Delay:      ldy #0
-            sty $a2
--loop:      cmp $a2
-            bne loop
-            rts
 
 ; Pseudo Random
 Rand63:     lda #%00000100      ; 6-bit
