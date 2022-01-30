@@ -227,15 +227,11 @@ delay:      cmp $a2             ;   ,,
 Eval:       lda #0              ; Reset the score, the number of green positions
             sta SCORE           ; ,,
             ldy #0              ; Y = position
--loop:      tya                 ; Remove the letter from the helper display
-            pha                 ; ,,
-            lda MOVE,y          ; ,,
+-loop:      lda MOVE,y          ; Remove the letter from the helper display
             and #$3f            ; ,,
-            tay                 ; ,,
+            tax                 ; ,,
             lda #" "            ; ,,
-            sta DISPLAY+$1000,y ; ,,
-            pla                 ; ,,
-            tay                 ; ,,
+            sta DISPLAY+$1000,x ; ,,
             lda MOVE,y          ; Get the move at the position
             cmp WORD,y          ; Is it the same as the word at this position?
             beq Green           ; If so, light it up green
