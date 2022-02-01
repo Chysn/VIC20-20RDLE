@@ -161,10 +161,12 @@ wait:       jsr SCNKEY          ; From Programmer's Reference Guide, method for
             beq wait            ;   ,,
             ldy #0              ; Clear keyboard buffer to prevent clogs
             sty KBSIZE          ; ,,
-            cmp #$14            ; DEL, remove last character
-            beq Backspace       ; ,,
             cmp #$0d            ; RETURN, submit move
             beq Submit          ; ,,
+            ldy #8              ; Set screen color (recover from invalid word)
+            sty $900f           ; ,,
+            cmp #$14            ; DEL, remove last character
+            beq Backspace       ; ,,
             cmp #133            ; If F1 is pressed, restart game
             bne ch_letters      ; ,,
             jmp Begin           ; ,,
@@ -213,12 +215,6 @@ Submit:     lda POSITION        ; Is the cursor in the last position?
             bcs Eval
             lda #15             ; This is an invalid word. Turn the border
             sta $900f           ;   color yellow for a few jiffies
-            lda $a2             ;   ,,
-            adc #$10            ;   ,,
-delay:      cmp $a2             ;   ,,
-            bne delay           ;   ,,
-            lda #8              ; Set the border color back to normal
-            sta $900f           ; ,,
             jmp wait            ; And go back for more input (a new word, etc.)
 
 ; Evaluate Move
