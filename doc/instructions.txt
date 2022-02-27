@@ -19,8 +19,8 @@ will be highlighted yellow.
 If you figure out the word with six guesses or less, you WIN, and the border
 will turn green.
 
-If you don't figure out the word, you LOSE, and the border will turn red. To
-add to your humiliation, you won't learn what the word is.
+If you don't figure out the word, you LOSE, and the border will turn red, and
+the word will be revealed.
 
 To start a new game, press any key.
 

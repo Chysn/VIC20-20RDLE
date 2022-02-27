@@ -155,12 +155,9 @@ Main:       jsr DrawCursor
 debounce:   ldy #$40            ; Debounce the keyboard by waiting for all keys
 -loop:      cpy $c5             ;   to be released
             bne loop            ;   ,,
-wait:       jsr SCNKEY          ; From Programmer's Reference Guide, method for
-            jsr GETIN           ;   getting a character code as input
+wait:       jsr GETIN           ;   getting a character code as input
             cmp #0              ;   ,,
             beq wait            ;   ,,
-            ldy #0              ; Clear keyboard buffer to prevent clogs
-            sty KBSIZE          ; ,,
             cmp #$0d            ; RETURN, submit move
             beq Submit          ; ,,
             ldy #8              ; Set screen color (recover from invalid word)
@@ -251,7 +248,21 @@ next_pos:   iny                 ; Go to the next position
             jmp Main
 
 ; Handle Game Over Stuff
-Loser:      lda #10             ; Set screen border to red if lost
+Loser:      ldx #13             ; Show word
+            ldy #8              ; ,,
+            clc                 ; ,,
+            jsr PLOT            ; ,,
+            lda #28             ; ,, (in red)
+            jsr CHROUT          ; ,,
+            lda #18             ; ,, (and reverse)
+            jsr CHROUT          ; ,,
+            ldy #0              ; ,,
+-loop:      lda WORD,y          ; ,,
+            jsr CHROUT          ; ,,
+            iny                 ; ,,
+            cpy #5              ; ,,
+            bne loop            ; ,,
+            lda #10             ; Set screen border to red if lost
             .byte $3c           ; (skip next word)
 Winner:     lda #13             ; Set screen border to green if won
             sta $900f           ; ,,
